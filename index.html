@@ -155,7 +155,18 @@ window.onload = function() {
     timerInterval = setInterval(updateTimer, 1000);
 };
     </script>
-
+// service-worker.js を登録
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then((registration) => {
+                console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch((error) => {
+                console.error('Service Worker registration failed:', error);
+            });
+    });
+}
     <script src="/service-worker.js"></script>
 </body>
 </html>
