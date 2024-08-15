@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/manifest.json">
+    <title>Pomodoro Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        #timer-container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #status-text {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        #time {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #startStopBtn {
+            background-color: #007BFF;
+            color: #fff;
+        }
+        #resetBtn {
+            background-color: #FF4136;
+            color: #fff;
+        }
+        input {
+            font-size: 16px;
+            padding: 5px;
+            margin: 5px;
+            width: 60px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #settings-container {
+            margin-bottom: 20px;
+        }
+        #current-time {
+            font-size: 12px;
+            color: #333;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="timer-container">
+        <div id="status-text">待機中</div>
+        <div id="time">00:00</div>
+        <div id="settings-container">
+            <div>
+                作業時間: <input type="number" id="work-time" value="25"> 分
+            </div>
+            <div>
+                休憩時間: <input type="number" id="break-time" value="5"> 分
+            </div>
+        </div>
+        <button id="startStopBtn">Start</button>
+        <button id="resetBtn">Reset</button>
+        <div id="current-time"></div>
+    </div>
+    <audio id="alarm-sound" src="alarm.mp3"></audio>
+    <script src="script.js"></script>
+</body>
+</html>
