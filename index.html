@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ポモドーロタイマー</title>
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        #timer {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        #end-time {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        input, button {
+            font-size: 1em;
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+        }
+        button {
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input[type="number"] {
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ポモドーロタイマー</h1>
+    <div id="timer">00:00</div>
+    <div id="end-time">終了時間: --:--</div>
+    <input type="number" id="work-minutes" placeholder="作業時間 (分)" />
+    <input type="number" id="break-minutes" placeholder="休憩時間 (分)" />
+    <button onclick="startPomodoro()">スタート</button>
+    <button onclick="stopPomodoro()">ストップ</button>
+    <button onclick="resetPomodoro()">リセット</button>
+
+    <script>
+        // JavaScriptコードは次に示す
+        let timerInterval;
+        let isBreak = false;
+        const timerElement = document.getElementById('timer');
+        const endTimeElement = document.getElementById('end-time');
+
+        function startPomodoro() {
+            const workMinutes = parseInt(document.getElementById('work-minutes').value, 10);
+            const breakMinutes = parseInt(document.getElementById('break-minutes').value, 10);
+
+            if (isNaN(workMinutes) || workMinutes <= 0 || isNaN(breakMinutes) || breakMinutes < 0) {
+                alert('有効な時間を入力してください。');
+                return;
+            }
+
+            clearInterval(timerInterval);
+
+            const now = new Date();
+            const endTime = new Date(now.getTime() + workMinutes * 60000);
+
+            localStorage.setItem('endTime', endTime.toISOString());
+            localStorage.setItem('workMinutes', workMinutes);
+            localStorage.setItem('breakMinutes', breakMinutes);
+
+            isBreak = false;
+
+            updateEndTimeDisplay(endTime);
+            timerInterval = setInterval(updateTimer, 1000);
+            updateTimer(); // Immediately update the timer display
+        }
+
+        function stopPomodoro() {
+            clearInterval(timerInterval);
+        }
+
+        function resetPomodoro() {
+            clearInterval(timerInterval);
+            localStorage.removeItem('endTime');
+            localStorage.removeItem('workMinutes');
+            localStorage.removeItem('breakMinutes');
+            timerElement.textContent = '00:00';
+            endTimeElement.textContent = '終了時間: --:--';
+        }
+
+        function updateTimer() {
+            const endTimeStr = localStorage.getItem('endTime');
+            if (!endTimeStr) return;
+
+            const endTime = new Date(endTimeStr);
+            const now = new Date();
+            const timeLeft = endTime - now;
+
+            if (timeLeft <= 0) {
+                if (!isBreak) {
+                    // Switch to break time
+                    const breakMinutes = parseInt(localStorage.getItem('breakMinutes'), 10);
+                    const breakEndTime = new Date(now.getTime() + breakMinutes * 60000);
+                    
+                    localStorage.setItem('endTime', breakEndTime.toISOString());
+                    isBreak = true;
+                    
+                    updateEndTimeDisplay(breakEndTime);
+                    alert('作業時間終了。休憩時間を開始します。');
+                } else {
+                    // End of cycle
+                    clearInterval(timerInterval);
+                    localStorage.removeItem('endTime');
+                    localStorage.removeItem('workMinutes');
+                    localStorage.removeItem('breakMinutes');
+                    timerElement.textContent = '00:00';
+                    endTimeElement.textContent = '終了時間: --:--';
+                    alert('休憩時間終了。作業サイクルをリセットします。');
+                }
+                return;
+            }
+
+            const minutes = Math.floor(timeLeft / 60000);
+            const seconds = Math.floor((timeLeft % 60000) / 1000);
+
+            timerElement.textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function updateEndTimeDisplay(endTime) {
+            const hours = endTime.getHours();
+            const minutes = endTime.getMinutes();
+            const seconds = endTime.getSeconds();
+            endTimeElement.textContent = 
+                `終了時間: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // On page load, initialize timer
+        window.onload = function() {
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        };
+
+        // サービスワーカーの登録
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
